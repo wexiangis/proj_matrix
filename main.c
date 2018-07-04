@@ -19,9 +19,9 @@ int main(void)
     // 初始化一个camera
     _3D_Camera_Type *camera;
     //初始化一个多边形
-    _3D_PointArray_Type *dpat, *dpat2, dpat3;
+    _3D_PointArray_Type *dpat, *dpat2, *dpat3;
 
-    //
+    // camera init
     if((camera = _3D_camera_init(VIEW_X_SIZE, VIEW_Y_SIZE, (_3D_PI/2), 5, 1000)) == NULL)
     {
         printf("camera init failed\r\n");
@@ -96,10 +96,34 @@ int main(void)
     _3D_pointArray_comment_add(dpat2, -40.00, 50.00+50, 0.00+150, "K", 0x0000FF);
     _3D_pointArray_comment_add(dpat2, 50.00, 0.00+50, 0.00+150, "L", 0xFFFF00);
 
+    //XYZ
+    if((dpat3 = _3D_pointArray_init(6, 
+        100.00, 0.00, 0.00+150, 0xFF0000, 
+        -100.00, 0.00, 0.00+150, 0xFF0000, 
+        0.00, 100.00, 0.00+150, 0x00FF00, 
+        0.00, -100.00, 0.00+150, 0x00FF00, 
+        0.00, 0.00, 100.00+150, 0x00FFFF, 
+        0.00, 0.00, -100.00+150, 0x00FFFF
+        )) == NULL)
+    {
+        printf("_3D_pointArray_init failed\r\n");
+        return -1;
+    }
+    _3D_pointArray_ppLink_add(dpat3, 0, 1, 1);
+    _3D_pointArray_ppLink_add(dpat3, 2, 1, 3);
+    _3D_pointArray_ppLink_add(dpat3, 4, 1, 5);
+    _3D_pointArray_comment_add(dpat3, 100.00, 0.00, 0.00+150, "X", 0xFF0000);
+    _3D_pointArray_comment_add(dpat3, 0.00, 100.00, 0.00+150, "Y", 0x00FF00);
+    _3D_pointArray_comment_add(dpat3, 0.00, 0.00, 100.00+150, "Z", 0x00FFFF);
+
     //初始转角
     // raxyz[0] = _3D_PI/8;
     // raxyz[1] = _3D_PI/8;
     // raxyz[2] = _3D_PI/8;
+    //初始平移
+    // mvxyz[0] = -10;
+    // mvxyz[1] = -10;
+    // mvxyz[2] = 0;
 
     while(1)
     {
@@ -109,18 +133,24 @@ int main(void)
         //
         _3D_pointArray_scroll(dpat, raxyz[0], raxyz[1], raxyz[2], mvxyz[0], mvxyz[1], mvxyz[2]);
         _3D_pointArray_scroll(dpat2, raxyz[0], raxyz[1], raxyz[2], mvxyz[0], mvxyz[1], mvxyz[2]);
+        _3D_pointArray_scroll(dpat3, raxyz[0], raxyz[1], raxyz[2], mvxyz[0], mvxyz[1], mvxyz[2]);
         
-        _3D_camera_show(camera, dpat);
+        _3D_camera_show(camera, dpat3);
         _3D_camera_show(camera, dpat2);
+        _3D_camera_show(camera, dpat);
 
         //
         PRINT_EN();
 
         memset(raxyz, 0, sizeof(raxyz));
         memset(mvxyz, 0, sizeof(mvxyz));
+
         // raxyz[0] += SCROLL_DIV;
         // raxyz[1] += SCROLL_DIV;
         // raxyz[2] += SCROLL_DIV;
+        // mvxyz[0] += 0;
+        // mvxyz[1] += 0;
+        // mvxyz[2] += 0;
 
         if(scanf("%s", input))
         // if(0)
@@ -162,6 +192,7 @@ int main(void)
                 _3D_camera_reset(camera);
                 _3D_pointArray_reset(dpat);
                 _3D_pointArray_reset(dpat2);
+                _3D_pointArray_reset(dpat3);
             }
         }
 
