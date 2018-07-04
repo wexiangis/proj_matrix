@@ -67,13 +67,21 @@ int main(void)
     _3D_pointArray_ppLink_add(dpat, 4, 2, 5, 7);
     _3D_pointArray_ppLink_add(dpat, 5, 1, 6);
     _3D_pointArray_ppLink_add(dpat, 6, 1, 7);
+    _3D_pointArray_comment_add(dpat, 40.00, -30.00, 50.00+150, "H", 0xFF0000);
+    _3D_pointArray_comment_add(dpat, 40.00, -80.00, 50.00+150, "G", 0x00FF00);
+    _3D_pointArray_comment_add(dpat, -40.00, -80.00, 50.00+150, "F", 0x0000FF);
+    _3D_pointArray_comment_add(dpat, -40.00, -30.00, 50.00+150, "E", 0xFFFF00);
+    _3D_pointArray_comment_add(dpat, -40.00, -30.00, -50.00+150, "D", 0xFF00FF);
+    _3D_pointArray_comment_add(dpat, -40.00, -80.00, -50.00+150, "C", 0x00FFFF);
+    _3D_pointArray_comment_add(dpat, 40.00, -80.00, -50.00+150, "B", 0xFF8000);
+    _3D_pointArray_comment_add(dpat, 40.00, -30.00, -50.00+150, "A", 0x00FF80);
 
     //棱形
     if((dpat2 = _3D_pointArray_init(4, 
         0.00, 0.00+50, 50.00+150, 0xFF00FF, 
-        -20.00, -30.00+50, 0.00+150, 0xFFFF00, 
-        -20.00, 30.00+50, 0.00+150, 0x00FFFF, 
-        40.00, 0.00+50, 0.00+150, 0xFF8000
+        -40.00, -50.00+50, 0.00+150, 0xFFFF00, 
+        -40.00, 50.00+50, 0.00+150, 0x00FFFF, 
+        50.00, 0.00+50, 0.00+150, 0xFF8000
         )) == NULL)
     {
         printf("_3D_pointArray_init failed\r\n");
@@ -83,6 +91,10 @@ int main(void)
     _3D_pointArray_ppLink_add(dpat2, 1, 1, 2);
     _3D_pointArray_ppLink_add(dpat2, 2, 1, 3);
     _3D_pointArray_ppLink_add(dpat2, 3, 1, 1);
+    _3D_pointArray_comment_add(dpat2, 0.00, 0.00+50, 50.00+150, "I", 0xFF0000);
+    _3D_pointArray_comment_add(dpat2, -40.00, -50.00+50, 0.00+150, "J", 0x00FF00);
+    _3D_pointArray_comment_add(dpat2, -40.00, 50.00+50, 0.00+150, "K", 0x0000FF);
+    _3D_pointArray_comment_add(dpat2, 50.00, 0.00+50, 0.00+150, "L", 0xFFFF00);
 
     //初始转角
     // raxyz[0] = _3D_PI/8;
