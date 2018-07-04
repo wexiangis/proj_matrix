@@ -2,6 +2,7 @@
 #ifndef __3D_MATRIX_H_
 #define __3D_MATRIX_H_
 
+#include <stdbool.h>
 #include <stdarg.h>     //变长参数
 
 //---------- base data ----------
@@ -40,6 +41,8 @@ typedef struct _3D_Comment{
     double xyz[3];
     double xyzCopy[3];
     double xy[2];
+    double depth;
+    bool range;
     char *comment;
     int color;
     struct _3D_Comment *next;
@@ -56,6 +59,9 @@ typedef struct _3D_PointArray{
     double *xyzArrayCopy; //recover data
 
     double *xyArray;       //x1,y1;x2,y2;...
+    double *depthArray;
+    bool *rangeArray;
+
     int *colorArray;    //col1;col2...
     
     _3D_PPLink_Type *link;
@@ -130,7 +136,9 @@ int _3D_matrix_project_calculate(
     double ar, 
     int nearZ, 
     int farZ, 
-    double *retXY);
+    double *retXY, 
+    double *retDepth, 
+    bool *retRange);
 
 #endif
 

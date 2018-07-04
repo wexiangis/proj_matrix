@@ -73,7 +73,7 @@ void _3D_matrix_scroll_move_calculate(double scroll_xyz[3], double move_xyz[3], 
 
 // 矩阵运算: 透视矩阵点乘三维坐标,然后除以z(透视除法),返回投影坐标[-ar, ar]U[-1, 1]
 // 返回: 0/不再相框内  1/在相框内
-int _3D_matrix_project_calculate(double cameraOpenAngle, double xyz[3], double ar, int nearZ, int farZ, double *retXY)
+int _3D_matrix_project_calculate(double cameraOpenAngle, double xyz[3], double ar, int nearZ, int farZ, double *retXY, double *retDepth, bool *retRange)
 {   
     double hMax, hMin, wMax, wMin;
     double retX, retY, retZ;
@@ -121,11 +121,19 @@ int _3D_matrix_project_calculate(double cameraOpenAngle, double xyz[3], double a
         retXY[0] = retX;
         retXY[1] = retY;
     }
+    if(retDepth)
+        *retDepth = xyz[2] - nearZ;
+    if(retRange)
+        *retRange = false;
     //
     if(wMax > retX && retX > wMin && 
         hMax > retY && retY > hMin && 
         1 > retZ && retZ > -1)
+    {
+        if(retRange)
+            *retRange = true;
         return 1;
+    }
     return 0;
 }
 
@@ -220,6 +228,9 @@ _3D_PointArray_Type *_3D_pointArray_init(int pointNum, double x, double y, doubl
     dpat->xyzArrayCopy = (double *)calloc((pointNum+1)*3, sizeof(double));
 
     dpat->xyArray = (double *)calloc((pointNum+1)*2, sizeof(double));
+    dpat->depthArray = (double *)calloc(pointNum+1, sizeof(double));
+    dpat->rangeArray = (bool *)calloc(pointNum+1, sizeof(bool));
+
     dpat->colorArray = (int *)calloc(pointNum+1, sizeof(int));
     //
     dpat->xyzArray[0] = x;
@@ -393,7 +404,7 @@ void _3D_pointArray_comment_add(_3D_PointArray_Type *dpat, double x, double y, d
 void _3D_camera_show(_3D_Camera_Type *dct, _3D_PointArray_Type *dpat)
 {
     int i, j, k;
-    int cP, tP;
+    int cP, tP, cP2, tP2;
     _3D_Comment_Type *comment;
     _3D_PPLink_Type *link;
     //
@@ -411,7 +422,9 @@ void _3D_camera_show(_3D_Camera_Type *dct, _3D_PointArray_Type *dpat)
             dct->ar, 
             dct->nearZ, 
             dct->farZ, 
-            &dpat->xyArray[k]);
+            &dpat->xyArray[k], 
+            &dpat->depthArray[i], 
+            &dpat->rangeArray[i]);
         printf("project: %lf/%lf/%lf ---> %lf/%lf\r\n", 
             dpat->xyzArray[j], dpat->xyzArray[j+1], dpat->xyzArray[j+2], 
             dpat->xyArray[k], dpat->xyArray[k+1]);
@@ -435,7 +448,9 @@ void _3D_camera_show(_3D_Camera_Type *dct, _3D_PointArray_Type *dpat)
             dct->ar, 
             dct->nearZ, 
             dct->farZ, 
-            comment->xy);
+            comment->xy, 
+            &comment->depth, 
+            &comment->range);
         //zoom adjust
         comment->xy[0] = (1 + comment->xy[0]/dct->ar)*dct->width/2;
         comment->xy[1] = (1 - comment->xy[1])*dct->height/2;
@@ -448,15 +463,21 @@ void _3D_camera_show(_3D_Camera_Type *dct, _3D_PointArray_Type *dpat)
     link = dpat->link;
     while(link)
     {
-        cP = link->currentOrder*2;
+        cP = link->currentOrder;
+        cP2 = link->currentOrder*2;
         for(i = 0; i < link->targetOrderNum; i++)
         {
-            tP = link->targetOrderArray[i]*2;
-            view_line(
-                (dpat->colorArray[link->currentOrder] + dpat->colorArray[link->targetOrderArray[i]])/2, 
-                dpat->xyArray[cP], dpat->xyArray[cP+1], 
-                dpat->xyArray[tP], dpat->xyArray[tP+1], 
-                _3D_LINE_SIZE, 0);
+            tP = link->targetOrderArray[i];
+            tP2 = link->targetOrderArray[i]*2;
+            // have one point in range of camera
+            if(dpat->rangeArray[cP] || dpat->rangeArray[tP])
+            {
+                view_line(
+                    (dpat->colorArray[cP] + dpat->colorArray[tP])/2, 
+                    dpat->xyArray[cP2], dpat->xyArray[cP2+1], 
+                    dpat->xyArray[tP2], dpat->xyArray[tP2+1], 
+                    _3D_LINE_SIZE, 0);
+            }
         }
         //
         link = link->next;
@@ -465,7 +486,8 @@ void _3D_camera_show(_3D_Camera_Type *dct, _3D_PointArray_Type *dpat)
     comment = dpat->comment;
     while(comment)
     {
-        view_string(comment->color, -1, comment->comment, comment->xy[0], comment->xy[1], 160, 0);
+        if(comment->range)
+            view_string(comment->color, -1, comment->comment, comment->xy[0], comment->xy[1], 160, 0);
         //
         comment = comment->next;
     }
