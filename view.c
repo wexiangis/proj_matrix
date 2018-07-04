@@ -408,13 +408,23 @@ void view_getDotFromLine(int xStart, int yStart, int xEnd, int yEnd, int *dot)
 //返回: 无
 void view_line(long color, int xStart, int yStart, int xEnd, int yEnd, int size, int space)
 {
-	unsigned short t; 
+	int t; 
 	int xerr = 0, yerr = 0;
 	int delta_x, delta_y;
 	int distance; 
 	int incx, incy, xCount, yCount; 
     int spaceCount = 0, spaceVal = 0;
 	
+    // int timeOut = 0;
+
+    if(xStart - xEnd > 10000 || xEnd - xStart > 10000 || 
+        yStart - yEnd > 10000 || yEnd - yStart > 10000)
+    {
+        printf("err input %d/%d --> %d/%d time out !!\r\n", 
+            xStart, yStart, xEnd, yEnd);
+        return;
+    }
+
 	if(size <= 0)
 	    return ;
 	
@@ -463,6 +473,14 @@ void view_line(long color, int xStart, int yStart, int xEnd, int yEnd, int size,
 	//
 	for(t = 0; t <= distance + 1; t++ )//画线输出 
 	{  
+        //timeOut proected
+        // if(timeOut++ > 10000)
+        // {
+        //     printf("line %d/%d --> %d/%d time out !!\r\n", 
+        //         xStart, yStart, xEnd, yEnd);
+        //     break;
+        // }
+
 	    if(spaceVal == 0 || spaceCount < 0)
 	    {
 	        spaceCount += 1;
