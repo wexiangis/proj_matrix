@@ -223,7 +223,7 @@ _3D_PointArray_Type *_3D_pointArray_init(int pointNum, double x, double y, doubl
     dpat = (_3D_PointArray_Type *)calloc(1, sizeof(_3D_PointArray_Type));
     //
     dpat->pointNum = pointNum;
-    dpat->arrayMemSize = pointNum*3*sizeof(double);
+    dpat->xyzArrayMemSize = pointNum*3*sizeof(double);
     dpat->xyzArray = (double *)calloc((pointNum+1)*3, sizeof(double));
     dpat->xyzArrayCopy = (double *)calloc((pointNum+1)*3, sizeof(double));
 
@@ -246,7 +246,7 @@ _3D_PointArray_Type *_3D_pointArray_init(int pointNum, double x, double y, doubl
         dpat->colorArray[col_count++] = va_arg(ap , int);
     }
     va_end(ap);
-    memcpy(dpat->xyzArrayCopy, dpat->xyzArray, dpat->arrayMemSize);
+    memcpy(dpat->xyzArrayCopy, dpat->xyzArray, dpat->xyzArrayMemSize);
     //
     return dpat;
 }
@@ -321,7 +321,7 @@ void _3D_pointArray_reset(_3D_PointArray_Type *dpat)
     memset(dpat->scroll_xyz, 0, sizeof(dpat->scroll_xyz));
     memset(dpat->move_xyz, 0, sizeof(dpat->move_xyz));
     //
-    memcpy(dpat->xyzArray, dpat->xyzArrayCopy, dpat->arrayMemSize);
+    memcpy(dpat->xyzArray, dpat->xyzArrayCopy, dpat->xyzArrayMemSize);
     //
     comment = dpat->comment;
     while(comment)

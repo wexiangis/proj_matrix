@@ -9,7 +9,6 @@
 #define SCROLL_DIV  (_3D_PI/16)
 #define MOVE_DIV  10
 
-
 int main(void)
 {
     char input[16];

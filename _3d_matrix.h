@@ -53,7 +53,7 @@ typedef struct _3D_PointArray{
     double move_xyz[3];
 
     int pointNum;
-    int arrayMemSize;
+    int xyzArrayMemSize;
 
     double *xyzArray;     //x1,y1,z1;x2,y2,z2;...
     double *xyzArrayCopy; //recover data

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/time.h>
 
 unsigned char amoled_data[VIEW_Y_SIZE][VIEW_X_SIZE][VIEW_PICTURE_PERW];
 
@@ -484,10 +485,11 @@ void view_line(long color, int xStart, int yStart, int xEnd, int yEnd, int size,
 	    if(spaceVal == 0 || spaceCount < 0)
 	    {
 	        spaceCount += 1;
-	        if(size == 1)
-                view_dot(color, xCount, yCount, 1);    //画点
-            else
-                view_dot(color, xCount, yCount, 2);    //画点
+	        // if(size == 1)
+            //     view_dot(color, xCount, yCount, 1);    //画点
+            // else
+            //     view_dot(color, xCount, yCount, 2);    //画点
+            view_dot(color, xCount, yCount, size);    //画点
         }
         else
         {
