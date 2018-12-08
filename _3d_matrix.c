@@ -288,9 +288,9 @@ void _3D_pointArray_scroll(_3D_PointArray_Type *dpat, double scrollX, double scr
 #if(_3D_SCROLL_MODE_SWITCH) //mode/1: 使用原始的坐标和累积的转角量,一次转换到目标坐标
         memcpy(&dpat->xyzArray[j], &dpat->xyzArrayCopy[j], 3*sizeof(double));
 #endif
-        printf("scroll: %lf/%lf/%lf", dpat->xyzArray[j], dpat->xyzArray[j+1], dpat->xyzArray[j+2]);
+        // printf("scroll: %lf/%lf/%lf", dpat->xyzArray[j], dpat->xyzArray[j+1], dpat->xyzArray[j+2]);
         _3D_matrix_scroll_move_calculate(dpat->scroll_xyz, dpat->move_xyz, &dpat->xyzArray[j]);
-        printf(" ---> %lf/%lf/%lf\r\n", dpat->xyzArray[j], dpat->xyzArray[j+1], dpat->xyzArray[j+2]);
+        // printf(" ---> %lf/%lf/%lf\r\n", dpat->xyzArray[j], dpat->xyzArray[j+1], dpat->xyzArray[j+2]);
         j += 3;
     }
     //
@@ -413,6 +413,7 @@ void _3D_camera_show(_3D_Camera_Type *dct, _3D_PointArray_Type *dpat)
     
     //---------- 3D to 2D ----------
 
+    // 定点位置计算和绘制
     for(i = 0, j = 0, k = 0; i < dpat->pointNum; i++)
     {
         //3D to 2D
@@ -425,9 +426,9 @@ void _3D_camera_show(_3D_Camera_Type *dct, _3D_PointArray_Type *dpat)
             &dpat->xyArray[k], 
             &dpat->depthArray[i], 
             &dpat->rangeArray[i]);
-        printf("project: %lf/%lf/%lf ---> %lf/%lf\r\n", 
-            dpat->xyzArray[j], dpat->xyzArray[j+1], dpat->xyzArray[j+2], 
-            dpat->xyArray[k], dpat->xyArray[k+1]);
+        // printf("project: %lf/%lf/%lf ---> %lf/%lf\r\n", 
+        //     dpat->xyzArray[j], dpat->xyzArray[j+1], dpat->xyzArray[j+2], 
+        //     dpat->xyArray[k], dpat->xyArray[k+1]);
         //zoom adjust
         dpat->xyArray[k] = (1 + dpat->xyArray[k]/dct->ar)*dct->width/2;
         dpat->xyArray[k+1] = (1 - dpat->xyArray[k+1])*dct->height/2;
@@ -437,7 +438,8 @@ void _3D_camera_show(_3D_Camera_Type *dct, _3D_PointArray_Type *dpat)
         j += 3;
         k += 2;
     }
-    //
+
+    // 注释位置计算和绘制
     comment = dpat->comment;
     while(comment)
     {
@@ -460,6 +462,7 @@ void _3D_camera_show(_3D_Camera_Type *dct, _3D_PointArray_Type *dpat)
 
     //---------- draw point to point ----------
 
+    // 点到点连线绘制
     link = dpat->link;
     while(link)
     {

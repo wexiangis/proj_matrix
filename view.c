@@ -421,7 +421,7 @@ void view_line(long color, int xStart, int yStart, int xEnd, int yEnd, int size,
     if(xStart - xEnd > 10000 || xEnd - xStart > 10000 || 
         yStart - yEnd > 10000 || yEnd - yStart > 10000)
     {
-        printf("err input %d/%d --> %d/%d time out !!\r\n", 
+        printf("large input %d/%d --> %d/%d time out !!\r\n", 
             xStart, yStart, xEnd, yEnd);
         return;
     }

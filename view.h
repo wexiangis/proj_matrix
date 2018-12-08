@@ -6,7 +6,7 @@
 #include "gbk2312.h"
 
 #define  VIEW_X_SIZE    320
-#define  VIEW_Y_SIZE    240
+#define  VIEW_Y_SIZE    320
 #define  VIEW_PICTURE_PERW     3
 
 void amoled_print_dot(int x, int y, const unsigned char *data);

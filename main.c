@@ -169,7 +169,6 @@ int main(void)
                 raxyz[2] += SCROLL_DIV*strlen(input);
             else if(input[0] == '3')
                 raxyz[2] -= SCROLL_DIV*strlen(input);
-            
             //depth
             if(input[0] == 'a')
                 mvxyz[2] += MOVE_DIV*strlen(input);
@@ -186,13 +185,45 @@ int main(void)
             else if(input[0] == 'x')
                 mvxyz[1] -= MOVE_DIV*strlen(input);
 
-            else if(input[0] == 'r')
+            else if(input[0] == 'R')
             {
                 _3D_camera_reset(camera);
                 _3D_pointArray_reset(dpat);
                 _3D_pointArray_reset(dpat2);
                 _3D_pointArray_reset(dpat3);
             }
+
+            //x scroll
+            if(input[0] == 't')
+                _3D_camera_scroll(camera, SCROLL_DIV*strlen(input), 0, 0, 0, 0, 0);
+            else if(input[0] == '5')
+                _3D_camera_scroll(camera, -SCROLL_DIV*strlen(input), 0, 0, 0, 0, 0);
+            //y scroll
+            else if(input[0] == 'y')
+                _3D_camera_scroll(camera, 0, SCROLL_DIV*strlen(input), 0, 0, 0, 0);
+            else if(input[0] == 'r')
+                _3D_camera_scroll(camera, 0, -SCROLL_DIV*strlen(input), 0, 0, 0, 0);
+            //z scroll
+            else if(input[0] == '4')
+                _3D_camera_scroll(camera, 0, 0, SCROLL_DIV*strlen(input), 0, 0, 0);
+            else if(input[0] == '6')
+                _3D_camera_scroll(camera, 0, 0, -SCROLL_DIV*strlen(input), 0, 0, 0);
+            //depth
+            if(input[0] == 'f')
+                _3D_camera_scroll(camera, 0, 0, 0, 0, 0, MOVE_DIV*strlen(input));
+            else if(input[0] == 'h')
+                _3D_camera_scroll(camera, 0, 0, 0, 0, 0, -MOVE_DIV*strlen(input));
+            //right/left
+            else if(input[0] == 'n')
+                _3D_camera_scroll(camera, 0, 0, 0, 0, MOVE_DIV*strlen(input), 0);
+            else if(input[0] == 'v')
+                _3D_camera_scroll(camera, 0, 0, 0, 0, -MOVE_DIV*strlen(input), 0);
+            //up/down
+            else if(input[0] == 'g')
+                _3D_camera_scroll(camera, 0, 0, 0, MOVE_DIV*strlen(input), 0, 0);
+            else if(input[0] == 'b')
+                _3D_camera_scroll(camera, 0, 0, 0, -MOVE_DIV*strlen(input), 0, 0);
+
         }
 
         usleep(100000);
