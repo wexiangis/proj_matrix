@@ -13,20 +13,20 @@
 #define _3D_LINE_SIZE 1
 
 // 矩阵运算: 先旋转后平移
-void _3D_matrix_scroll_move_calculate(double scroll_xyz[3], double move_xyz[3], double xyz[3])
+void _3D_matrix_scroll_move_calculate(double rollXYZ[3], double movXYZ[3], double xyz[3])
 {
     double x, y, z;
     double Xrad, Yrad, Zrad;
 
-    if (scroll_xyz == NULL || move_xyz == NULL || xyz == NULL)
+    if (rollXYZ == NULL || movXYZ == NULL || xyz == NULL)
         return;
 
     x = xyz[0];
     y = xyz[1];
     z = xyz[2];
-    Xrad = scroll_xyz[0];
-    Yrad = scroll_xyz[1];
-    Zrad = scroll_xyz[2];
+    Xrad = rollXYZ[0];
+    Yrad = rollXYZ[1];
+    Zrad = rollXYZ[2];
 
     /*      [scroll X]
     *   1       0       0
@@ -66,9 +66,9 @@ void _3D_matrix_scroll_move_calculate(double scroll_xyz[3], double move_xyz[3], 
         z * cos(Xrad) * cos(Yrad);
 
     // move
-    xyz[0] += move_xyz[0];
-    xyz[1] += move_xyz[1];
-    xyz[2] += move_xyz[2];
+    xyz[0] += movXYZ[0];
+    xyz[1] += movXYZ[1];
+    xyz[2] += movXYZ[2];
 }
 
 /*
@@ -86,7 +86,15 @@ void _3D_matrix_scroll_move_calculate(double scroll_xyz[3], double move_xyz[3], 
  * 
  *  返回: 0/不再相框内  1/在相框内
  */
-int _3D_matrix_project_calculate(double openAngle, double xyz[3], double ar, int nearZ, int farZ, double *retXY, double *retDepth, bool *retRange)
+int _3D_matrix_project_calculate(
+    double openAngle,
+    double xyz[3],
+    double ar,
+    int nearZ,
+    int farZ,
+    double *retXY,
+    double *retDepth,
+    bool *retRange)
 {
     double hMax, hMin, wMax, wMin;
     double retX, retY, retZ;
@@ -162,10 +170,18 @@ int _3D_matrix_project_calculate(double openAngle, double xyz[3], double ar, int
  *      openAngle: 相机视野开角,单位:rad,范围:(0,pi)
  *      nearZ: 相机近端距离,单位:点
  *      farZ: 相机远端端距离,单位:点
+ *      rollXYZ, movXYZ: 可选预置摄像机转角和位置,不用则置NULL
  *  说明: 近端和远端决定了一个远近范围,三维坐标点(x,y,z)的z值要在(nearZ,farZ)范围内才会被摄像机看到
  *  返回: NULL/失败
  */
-_3D_Camera_Type *_3D_camera_init(int width, int height, double openAngle, int nearZ, int farZ)
+_3D_Camera_Type *_3D_camera_init(
+    int width,
+    int height,
+    double openAngle,
+    int nearZ,
+    int farZ,
+    double *rollXYZ,
+    double *movXYZ)
 {
     _3D_Camera_Type *dct;
 
@@ -175,53 +191,60 @@ _3D_Camera_Type *_3D_camera_init(int width, int height, double openAngle, int ne
     dct = (_3D_Camera_Type *)calloc(1, sizeof(_3D_Camera_Type));
     dct->copy = (_3D_Camera_Type *)calloc(1, sizeof(_3D_Camera_Type));
 
-    dct->width = dct->copy->width = width;
-    dct->height = dct->copy->height = height;
-    dct->ar = dct->copy->ar = width / height;
-    dct->openAngle = dct->copy->openAngle = openAngle;
-    dct->nearZ = dct->copy->nearZ = nearZ;
-    dct->farZ = dct->copy->farZ = farZ;
+    dct->width = width;
+    dct->height = height;
+    dct->ar = width / height;
+    dct->openAngle = openAngle;
+    dct->nearZ = nearZ;
+    dct->farZ = farZ;
 
+    if (rollXYZ)
+        memcpy(dct->rollXYZ, rollXYZ, sizeof(double) * 3);
+    if (movXYZ)
+        memcpy(dct->movXYZ, movXYZ, sizeof(double) * 3);
+        
+    memcpy(dct->copy, dct, sizeof(_3D_Camera_Type));
     return dct;
 }
 
 // 相机: 旋转和平移
 void _3D_camera_scroll(_3D_Camera_Type *dct, double *scrollXYZ, double *movXYZ)
 {
-    double noScroll[3] = {0.0, 0.0, 0.0};
     if (dct == NULL)
         return;
 
-    dct->scroll_xyz[0] += scrollXYZ[0];
-    dct->scroll_xyz[1] += scrollXYZ[1];
-    dct->scroll_xyz[2] += scrollXYZ[2];
+    dct->rollXYZ[0] += scrollXYZ[0];
+    dct->rollXYZ[1] += scrollXYZ[1];
+    dct->rollXYZ[2] += scrollXYZ[2];
 
-    if (dct->scroll_xyz[0] >= 2 * _3D_PI)
-        dct->scroll_xyz[0] -= 2 * _3D_PI;
-    else if (dct->scroll_xyz[0] < 0)
-        dct->scroll_xyz[0] += 2 * _3D_PI;
-    if (dct->scroll_xyz[1] >= 2 * _3D_PI)
-        dct->scroll_xyz[1] -= 2 * _3D_PI;
-    else if (dct->scroll_xyz[1] < 0)
-        dct->scroll_xyz[1] += 2 * _3D_PI;
-    if (dct->scroll_xyz[2] >= 2 * _3D_PI)
-        dct->scroll_xyz[2] -= 2 * _3D_PI;
-    else if (dct->scroll_xyz[2] < 0)
-        dct->scroll_xyz[2] += 2 * _3D_PI;
+    if (dct->rollXYZ[0] >= 2 * _3D_PI)
+        dct->rollXYZ[0] -= 2 * _3D_PI;
+    else if (dct->rollXYZ[0] < 0)
+        dct->rollXYZ[0] += 2 * _3D_PI;
+    if (dct->rollXYZ[1] >= 2 * _3D_PI)
+        dct->rollXYZ[1] -= 2 * _3D_PI;
+    else if (dct->rollXYZ[1] < 0)
+        dct->rollXYZ[1] += 2 * _3D_PI;
+    if (dct->rollXYZ[2] >= 2 * _3D_PI)
+        dct->rollXYZ[2] -= 2 * _3D_PI;
+    else if (dct->rollXYZ[2] < 0)
+        dct->rollXYZ[2] += 2 * _3D_PI;
 
-    dct->move_xyz[0] += movXYZ[0];
-    dct->move_xyz[1] += movXYZ[1];
-    dct->move_xyz[2] += movXYZ[2];
+    dct->movXYZ[0] += movXYZ[0];
+    dct->movXYZ[1] += movXYZ[1];
+    dct->movXYZ[2] += movXYZ[2];
 
 #if (_3D_SCROLL_MODE_SWITCH) //mode/1: 使用原始的坐标和累积的转角量,一次转换到目标坐标
     memcpy(dct->xyz, dct->xyzCopy, sizeof(dct->xyz));
 #endif
 
-    _3D_matrix_scroll_move_calculate(noScroll, dct->move_xyz, dct->xyz);
+    dct->xyz[0] += dct->movXYZ[0];
+    dct->xyz[1] += dct->movXYZ[1];
+    dct->xyz[2] += dct->movXYZ[2];
 
 #if (!_3D_SCROLL_MODE_SWITCH) //mode/0: 每次转换都使用的上次转换的坐标,转角量使用过后清零
-    memset(dct->scroll_xyz, 0, sizeof(dct->scroll_xyz));
-    memset(dct->move_xyz, 0, sizeof(dct->move_xyz));
+    memset(dct->rollXYZ, 0, sizeof(dct->rollXYZ));
+    memset(dct->movXYZ, 0, sizeof(dct->movXYZ));
 #endif
 }
 
@@ -229,12 +252,9 @@ void _3D_camera_scroll(_3D_Camera_Type *dct, double *scrollXYZ, double *movXYZ)
 void _3D_camera_reset(_3D_Camera_Type *dct)
 {
     _3D_Camera_Type *dctCopy;
-    //
     if (dct == NULL || dct->copy == NULL)
         return;
-    //
     dctCopy = dct->copy;
-    //
     memcpy(dct, dctCopy, sizeof(_3D_Camera_Type));
     dct->copy = dctCopy;
 }
@@ -289,35 +309,35 @@ void _3D_pointArray_scroll(_3D_PointArray_Type *dpat, double *scrollXYZ, double 
     if (dpat == NULL)
         return;
     //
-    dpat->scroll_xyz[0] += scrollXYZ[0];
-    dpat->scroll_xyz[1] += scrollXYZ[1];
-    dpat->scroll_xyz[2] += scrollXYZ[2];
+    dpat->rollXYZ[0] += scrollXYZ[0];
+    dpat->rollXYZ[1] += scrollXYZ[1];
+    dpat->rollXYZ[2] += scrollXYZ[2];
     //
-    if (dpat->scroll_xyz[0] >= 2 * _3D_PI)
-        dpat->scroll_xyz[0] -= 2 * _3D_PI;
-    else if (dpat->scroll_xyz[0] < 0)
-        dpat->scroll_xyz[0] += 2 * _3D_PI;
+    if (dpat->rollXYZ[0] >= 2 * _3D_PI)
+        dpat->rollXYZ[0] -= 2 * _3D_PI;
+    else if (dpat->rollXYZ[0] < 0)
+        dpat->rollXYZ[0] += 2 * _3D_PI;
 
-    if (dpat->scroll_xyz[1] >= 2 * _3D_PI)
-        dpat->scroll_xyz[1] -= 2 * _3D_PI;
-    else if (dpat->scroll_xyz[1] < 0)
-        dpat->scroll_xyz[1] += 2 * _3D_PI;
+    if (dpat->rollXYZ[1] >= 2 * _3D_PI)
+        dpat->rollXYZ[1] -= 2 * _3D_PI;
+    else if (dpat->rollXYZ[1] < 0)
+        dpat->rollXYZ[1] += 2 * _3D_PI;
 
-    if (dpat->scroll_xyz[2] >= 2 * _3D_PI)
-        dpat->scroll_xyz[2] -= 2 * _3D_PI;
-    else if (dpat->scroll_xyz[2] < 0)
-        dpat->scroll_xyz[2] += 2 * _3D_PI;
+    if (dpat->rollXYZ[2] >= 2 * _3D_PI)
+        dpat->rollXYZ[2] -= 2 * _3D_PI;
+    else if (dpat->rollXYZ[2] < 0)
+        dpat->rollXYZ[2] += 2 * _3D_PI;
     //
-    dpat->move_xyz[0] += movXYZ[0];
-    dpat->move_xyz[1] += movXYZ[1];
-    dpat->move_xyz[2] += movXYZ[2];
+    dpat->movXYZ[0] += movXYZ[0];
+    dpat->movXYZ[1] += movXYZ[1];
+    dpat->movXYZ[2] += movXYZ[2];
     //
     for (i = 0, j = 0; i < dpat->pointNum; i++)
     {
 #if (_3D_SCROLL_MODE_SWITCH) //mode/1: 使用原始的坐标和累积的转角量,一次转换到目标坐标
         memcpy(&dpat->xyzArray[j], &dpat->xyzArrayCopy[j], 3 * sizeof(double));
 #endif
-        _3D_matrix_scroll_move_calculate(dpat->scroll_xyz, dpat->move_xyz, &dpat->xyzArray[j]);
+        _3D_matrix_scroll_move_calculate(dpat->rollXYZ, dpat->movXYZ, &dpat->xyzArray[j]);
         j += 3;
     }
     //
@@ -327,13 +347,13 @@ void _3D_pointArray_scroll(_3D_PointArray_Type *dpat, double *scrollXYZ, double 
 #if (_3D_SCROLL_MODE_SWITCH) //mode/1: 使用原始的坐标和累积的转角量,一次转换到目标坐标
         memcpy(comment->xyz, comment->xyzCopy, sizeof(comment->xyz));
 #endif
-        _3D_matrix_scroll_move_calculate(dpat->scroll_xyz, dpat->move_xyz, comment->xyz);
+        _3D_matrix_scroll_move_calculate(dpat->rollXYZ, dpat->movXYZ, comment->xyz);
         comment = comment->next;
     }
 
 #if (!_3D_SCROLL_MODE_SWITCH) //mode/0: 每次转换都使用的上次转换的坐标,转角量使用过后清零
-    memset(dpat->scroll_xyz, 0, sizeof(dpat->scroll_xyz));
-    memset(dpat->move_xyz, 0, sizeof(dpat->move_xyz));
+    memset(dpat->rollXYZ, 0, sizeof(dpat->rollXYZ));
+    memset(dpat->movXYZ, 0, sizeof(dpat->movXYZ));
 #endif
 }
 
@@ -345,8 +365,8 @@ void _3D_pointArray_reset(_3D_PointArray_Type *dpat)
     if (dpat == NULL)
         return;
     //
-    memset(dpat->scroll_xyz, 0, sizeof(dpat->scroll_xyz));
-    memset(dpat->move_xyz, 0, sizeof(dpat->move_xyz));
+    memset(dpat->rollXYZ, 0, sizeof(dpat->rollXYZ));
+    memset(dpat->movXYZ, 0, sizeof(dpat->movXYZ));
     //
     memcpy(dpat->xyzArray, dpat->xyzArrayCopy, dpat->xyzArrayMemSize);
     //
@@ -435,6 +455,7 @@ void _3D_camera_show(_3D_Camera_Type *dct, _3D_PointArray_Type *dpat)
     _3D_Comment_Type *comment;
     _3D_PPLink_Type *link;
     double noMove[3] = {0.0, 0.0, 0.0};
+    double tmpXYZ[3];
 
     if (dct == NULL || dpat == NULL)
         return;
@@ -445,14 +466,14 @@ void _3D_camera_show(_3D_Camera_Type *dct, _3D_PointArray_Type *dpat)
     for (i = 0, j = 0, k = 0; i < dpat->pointNum; i++)
     {
         //摄像机跑路了,空间坐标点也要跟着跑路
-        dpat->xyzArray[j] -= dct->xyz[0];
-        dpat->xyzArray[j + 1] -= dct->xyz[1];
-        dpat->xyzArray[j + 2] -= dct->xyz[2];
-        _3D_matrix_scroll_move_calculate(dct->scroll_xyz, noMove, &dpat->xyzArray[j]);
+        tmpXYZ[0] = dpat->xyzArray[j] - dct->xyz[0];
+        tmpXYZ[1] = dpat->xyzArray[j + 1] - dct->xyz[1];
+        tmpXYZ[2] = dpat->xyzArray[j + 2] - dct->xyz[2];
+        _3D_matrix_scroll_move_calculate(dct->rollXYZ, noMove, tmpXYZ);
         //三维坐标点投影到摄像机屏幕
         _3D_matrix_project_calculate(
             dct->openAngle,
-            &dpat->xyzArray[j],
+            tmpXYZ,
             dct->ar,
             dct->nearZ,
             dct->farZ,
@@ -475,14 +496,14 @@ void _3D_camera_show(_3D_Camera_Type *dct, _3D_PointArray_Type *dpat)
     while (comment)
     {
         //摄像机跑路了,空间坐标点也要跟着跑路
-        comment->xyz[0] -= dct->xyz[0];
-        comment->xyz[1] -= dct->xyz[1];
-        comment->xyz[2] -= dct->xyz[2];
-        _3D_matrix_scroll_move_calculate(dct->scroll_xyz, noMove, comment->xyz);
+        tmpXYZ[0] = comment->xyz[0] - dct->xyz[0];
+        tmpXYZ[1] = comment->xyz[1] - dct->xyz[1];
+        tmpXYZ[2] = comment->xyz[2] - dct->xyz[2];
+        _3D_matrix_scroll_move_calculate(dct->rollXYZ, noMove, tmpXYZ);
         //三维坐标点投影到摄像机屏幕
         _3D_matrix_project_calculate(
             dct->openAngle,
-            comment->xyz,
+            tmpXYZ,
             dct->ar,
             dct->nearZ,
             dct->farZ,

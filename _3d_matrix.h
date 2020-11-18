@@ -22,8 +22,8 @@ typedef struct _3D_Camera
     int nearZ;        //近端距离(屏幕到相机原点距离,即openAngle所在原点的距离)
     int farZ;         //远端距离(远端到相机原点距离）
 
-    double scroll_xyz[3]; //绕转弧度(单位:rad)
-    double move_xyz[3];   //平移量
+    double rollXYZ[3]; //绕转弧度(单位:rad)
+    double movXYZ[3];  //平移量
 
     double xyz[3];     //相机原点所在坐标
     double xyzCopy[3]; //备份
@@ -53,8 +53,8 @@ typedef struct _3D_Comment
 
 typedef struct _3D_PointArray
 {
-    double scroll_xyz[3];
-    double move_xyz[3];
+    double rollXYZ[3];
+    double movXYZ[3];
 
     int pointNum;
     int xyzArrayMemSize;
@@ -78,7 +78,9 @@ _3D_Camera_Type *_3D_camera_init(
     int height,
     double openAngle,
     int nearZ,
-    int farZ);
+    int farZ,
+    double *rollXYZ,
+    double *movXYZ);
 
 void _3D_camera_scroll(
     _3D_Camera_Type *dct,
@@ -120,8 +122,8 @@ void _3D_pointArray_comment_add(
     int color);
 
 void _3D_matrix_scroll_move_calculate(
-    double scroll_xyz[3],
-    double move_xyz[3],
+    double rollXYZ[3],
+    double movXYZ[3],
     double xyz[3]);
 
 int _3D_matrix_project_calculate(
