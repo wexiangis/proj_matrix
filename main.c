@@ -14,6 +14,7 @@ int main(void)
 {
     char input[16];
     double raxyz[3] = {0}, mvxyz[3] = {0};
+    double raxyz2[3] = {0}, mvxyz2[3] = {0};
 
     // 初始化一个camera
     _3D_Camera_Type *camera;
@@ -128,6 +129,8 @@ int main(void)
     {
         PRINT_CLEAR();
 
+        _3D_camera_scroll(camera, raxyz2, mvxyz2);
+
         _3D_pointArray_scroll(dpat, raxyz, mvxyz);
         _3D_pointArray_scroll(dpat2, raxyz, mvxyz);
         _3D_pointArray_scroll(dpat3, raxyz, mvxyz);
@@ -140,6 +143,8 @@ int main(void)
 
         memset(raxyz, 0, sizeof(raxyz));
         memset(mvxyz, 0, sizeof(mvxyz));
+        memset(raxyz2, 0, sizeof(raxyz2));
+        memset(mvxyz2, 0, sizeof(mvxyz2));
 
         // raxyz[0] += SCROLL_DIV;
         // raxyz[1] += SCROLL_DIV;
@@ -192,34 +197,34 @@ int main(void)
 
             //x scroll
             if(input[0] == 't')
-                _3D_camera_scroll(camera, SCROLL_DIV*strlen(input), 0, 0, 0, 0, 0);
+                raxyz2[0] += SCROLL_DIV*strlen(input);
             else if(input[0] == '5')
-                _3D_camera_scroll(camera, -SCROLL_DIV*strlen(input), 0, 0, 0, 0, 0);
+                raxyz2[0] -= SCROLL_DIV*strlen(input);
             //y scroll
             else if(input[0] == 'y')
-                _3D_camera_scroll(camera, 0, SCROLL_DIV*strlen(input), 0, 0, 0, 0);
+                raxyz2[1] += SCROLL_DIV*strlen(input);
             else if(input[0] == 'r')
-                _3D_camera_scroll(camera, 0, -SCROLL_DIV*strlen(input), 0, 0, 0, 0);
+                raxyz2[1] -= SCROLL_DIV*strlen(input);
             //z scroll
             else if(input[0] == '4')
-                _3D_camera_scroll(camera, 0, 0, SCROLL_DIV*strlen(input), 0, 0, 0);
+                raxyz2[2] += SCROLL_DIV*strlen(input);
             else if(input[0] == '6')
-                _3D_camera_scroll(camera, 0, 0, -SCROLL_DIV*strlen(input), 0, 0, 0);
+                raxyz2[2] -= SCROLL_DIV*strlen(input);
             //depth
             if(input[0] == 'f')
-                _3D_camera_scroll(camera, 0, 0, 0, 0, 0, MOVE_DIV*strlen(input));
+                mvxyz2[2] += MOVE_DIV*strlen(input);
             else if(input[0] == 'h')
-                _3D_camera_scroll(camera, 0, 0, 0, 0, 0, -MOVE_DIV*strlen(input));
+                mvxyz2[2] -= MOVE_DIV*strlen(input);
             //right/left
             else if(input[0] == 'n')
-                _3D_camera_scroll(camera, 0, 0, 0, 0, MOVE_DIV*strlen(input), 0);
+                mvxyz2[0] += MOVE_DIV*strlen(input);
             else if(input[0] == 'v')
-                _3D_camera_scroll(camera, 0, 0, 0, 0, -MOVE_DIV*strlen(input), 0);
+                mvxyz2[0] -= MOVE_DIV*strlen(input);
             //up/down
             else if(input[0] == 'g')
-                _3D_camera_scroll(camera, 0, 0, 0, MOVE_DIV*strlen(input), 0, 0);
+                mvxyz2[1] += MOVE_DIV*strlen(input);
             else if(input[0] == 'b')
-                _3D_camera_scroll(camera, 0, 0, 0, -MOVE_DIV*strlen(input), 0, 0);
+                mvxyz2[1] -= MOVE_DIV*strlen(input);
 
         }
 

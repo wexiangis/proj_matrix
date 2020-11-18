@@ -8,7 +8,7 @@
 
 // 0:增量式,适合连续变化的旋转(会累积误差)
 // 1:每次都从原始坐标进行XYZ依次旋转,适合一次旋转
-#define _3D_SCROLL_MODE_SWITCH 0
+#define _3D_SCROLL_MODE_SWITCH 1
 
 #define _3D_LINE_SIZE 1
 
@@ -186,15 +186,16 @@ _3D_Camera_Type *_3D_camera_init(int width, int height, double openAngle, int ne
 }
 
 // 相机: 旋转和平移
-void _3D_camera_scroll(_3D_Camera_Type *dct, double scrollX, double scrollY, double scrollZ, double movX, double movY, double movZ)
+void _3D_camera_scroll(_3D_Camera_Type *dct, double *scrollXYZ, double *movXYZ)
 {
+    double noScroll[3] = {0.0, 0.0, 0.0};
     if (dct == NULL)
         return;
-    //
-    dct->scroll_xyz[0] += scrollX;
-    dct->scroll_xyz[1] += scrollY;
-    dct->scroll_xyz[2] += scrollZ;
-    //
+
+    dct->scroll_xyz[0] += scrollXYZ[0];
+    dct->scroll_xyz[1] += scrollXYZ[1];
+    dct->scroll_xyz[2] += scrollXYZ[2];
+
     if (dct->scroll_xyz[0] >= 2 * _3D_PI)
         dct->scroll_xyz[0] -= 2 * _3D_PI;
     else if (dct->scroll_xyz[0] < 0)
@@ -207,16 +208,17 @@ void _3D_camera_scroll(_3D_Camera_Type *dct, double scrollX, double scrollY, dou
         dct->scroll_xyz[2] -= 2 * _3D_PI;
     else if (dct->scroll_xyz[2] < 0)
         dct->scroll_xyz[2] += 2 * _3D_PI;
-    //
-    dct->move_xyz[0] += movX;
-    dct->move_xyz[1] += movY;
-    dct->move_xyz[2] += movZ;
-    //
+
+    dct->move_xyz[0] += movXYZ[0];
+    dct->move_xyz[1] += movXYZ[1];
+    dct->move_xyz[2] += movXYZ[2];
+
 #if (_3D_SCROLL_MODE_SWITCH) //mode/1: 使用原始的坐标和累积的转角量,一次转换到目标坐标
     memcpy(dct->xyz, dct->xyzCopy, sizeof(dct->xyz));
 #endif
-    _3D_matrix_scroll_move_calculate(dct->scroll_xyz, dct->move_xyz, dct->xyz);
-    //
+
+    _3D_matrix_scroll_move_calculate(noScroll, dct->move_xyz, dct->xyz);
+
 #if (!_3D_SCROLL_MODE_SWITCH) //mode/0: 每次转换都使用的上次转换的坐标,转角量使用过后清零
     memset(dct->scroll_xyz, 0, sizeof(dct->scroll_xyz));
     memset(dct->move_xyz, 0, sizeof(dct->move_xyz));
@@ -432,6 +434,7 @@ void _3D_camera_show(_3D_Camera_Type *dct, _3D_PointArray_Type *dpat)
     int cP, tP, cP2, tP2;
     _3D_Comment_Type *comment;
     _3D_PPLink_Type *link;
+    double noMove[3] = {0.0, 0.0, 0.0};
 
     if (dct == NULL || dpat == NULL)
         return;
@@ -441,6 +444,11 @@ void _3D_camera_show(_3D_Camera_Type *dct, _3D_PointArray_Type *dpat)
     //遍历每个点,计算位置并绘制
     for (i = 0, j = 0, k = 0; i < dpat->pointNum; i++)
     {
+        //摄像机跑路了,空间坐标点也要跟着跑路
+        dpat->xyzArray[j] -= dct->xyz[0];
+        dpat->xyzArray[j + 1] -= dct->xyz[1];
+        dpat->xyzArray[j + 2] -= dct->xyz[2];
+        _3D_matrix_scroll_move_calculate(dct->scroll_xyz, noMove, &dpat->xyzArray[j]);
         //三维坐标点投影到摄像机屏幕
         _3D_matrix_project_calculate(
             dct->openAngle,
@@ -466,6 +474,11 @@ void _3D_camera_show(_3D_Camera_Type *dct, _3D_PointArray_Type *dpat)
     comment = dpat->comment;
     while (comment)
     {
+        //摄像机跑路了,空间坐标点也要跟着跑路
+        comment->xyz[0] -= dct->xyz[0];
+        comment->xyz[1] -= dct->xyz[1];
+        comment->xyz[2] -= dct->xyz[2];
+        _3D_matrix_scroll_move_calculate(dct->scroll_xyz, noMove, comment->xyz);
         //三维坐标点投影到摄像机屏幕
         _3D_matrix_project_calculate(
             dct->openAngle,

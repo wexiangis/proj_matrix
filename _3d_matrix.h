@@ -82,12 +82,8 @@ _3D_Camera_Type *_3D_camera_init(
 
 void _3D_camera_scroll(
     _3D_Camera_Type *dct,
-    double scrollX,
-    double scrollY,
-    double scrollZ,
-    double movX,
-    double movY,
-    double movZ);
+    double *scrollXYZ,
+    double *movXYZ);
 
 void _3D_camera_show(
     _3D_Camera_Type *dct,
