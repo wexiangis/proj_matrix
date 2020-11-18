@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "_3d_matrix.h"
 #include "view.h"
@@ -12,7 +13,6 @@
 int main(void)
 {
     char input[16];
-    //
     double raxyz[3] = {0}, mvxyz[3] = {0};
 
     // 初始化一个camera
@@ -21,7 +21,7 @@ int main(void)
     _3D_PointArray_Type *dpat, *dpat2, *dpat3;
 
     // camera init
-    if((camera = _3D_camera_init(VIEW_X_SIZE, VIEW_Y_SIZE, (_3D_PI/2), 5, 1000)) == NULL)
+    if((camera = _3D_camera_init(VIEW_X_SIZE, VIEW_Y_SIZE, (_3D_PI / 2), 5, 1000)) == NULL)
     {
         printf("camera init failed\r\n");
         return -1;
@@ -126,19 +126,16 @@ int main(void)
 
     while(1)
     {
-        //
         PRINT_CLEAR();
 
-        //
-        _3D_pointArray_scroll(dpat, raxyz[0], raxyz[1], raxyz[2], mvxyz[0], mvxyz[1], mvxyz[2]);
-        _3D_pointArray_scroll(dpat2, raxyz[0], raxyz[1], raxyz[2], mvxyz[0], mvxyz[1], mvxyz[2]);
-        _3D_pointArray_scroll(dpat3, raxyz[0], raxyz[1], raxyz[2], mvxyz[0], mvxyz[1], mvxyz[2]);
+        _3D_pointArray_scroll(dpat, raxyz, mvxyz);
+        _3D_pointArray_scroll(dpat2, raxyz, mvxyz);
+        _3D_pointArray_scroll(dpat3, raxyz, mvxyz);
         
         _3D_camera_show(camera, dpat3);
         _3D_camera_show(camera, dpat2);
         _3D_camera_show(camera, dpat);
 
-        //
         PRINT_EN();
 
         memset(raxyz, 0, sizeof(raxyz));
